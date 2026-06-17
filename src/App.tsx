@@ -89,7 +89,7 @@ export default function App() {
               <div className="w-16 h-[1px] bg-primary-cyan/40 my-6"></div>
 
               <p className="text-base md:text-lg text-white/70 max-w-2xl leading-relaxed font-sans font-light">
-                วิศวกรรมคอมพิวเตอร์จบใหม่ ที่ยังมีอะไรต้องเรียนอีกเยอะ ชอบลงมือทำโดยสร้างโปรเจกต์จริงเพื่อทำความเข้าใจระบบเชิงลึก และพร้อมรับฟังข้อเสนอแนะเพื่อปรับปรุงขีดความสามารถและพัฒนาตนเองอย่างต่อเนื่องในทุกๆ วัน.
+                วิศวกรรมคอมพิวเตอร์จบใหม่ ที่ยังมีอะไรต้องเรียนอีกเยอะ ชอบลงมือทำเพื่อเข้าใจ และพร้อมรับฟังเพื่อเติบโตในทุกๆ วัน..
               </p>
 
               {/* Dynamic trigger links */}
@@ -169,7 +169,7 @@ export default function App() {
               </h2>
 
               <p className="text-sm md:text-base text-text-secondary leading-relaxed max-w-2xl">
-                A structured summary of frameworks, machine learning runtimes, and object-oriented architectures utilized in active development loops. Click any skill chip below to highlight associated production systems!
+                นักศึกษาวิศวกรรมคอมพิวเตอร์จบใหม่ สนใจในการพัฒนา Frontend, Backend Development และการเรียนรู้การใช้ AI ช่วยในกระบวนการเขียนโค้ด ได้รับโอกาสฝึกงานที่ PEA ทำให้ได้สัมผัสการทำงานในระบบจริง ตั้งใจเรียนรู้ พัฒนาทักษะอย่างต่อเนื่อง และพร้อมเปิดรับคำแนะนำจากทีมงานที่มีประสบการณ์
               </p>
 
               <div className="flex flex-wrap gap-3 pt-4">
