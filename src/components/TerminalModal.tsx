@@ -234,13 +234,18 @@ export default function TerminalModal({ isOpen, onClose, initialCommand }: Termi
       case "skills":
         newLines.push(
           { text: "TECHNICAL ARSENAL INTEGRITY MATRIX / GRADED READOUT:", type: "info" },
-          { text: "  React        [█████████████████░░] 85%  - Proficient in modular states", type: "success" },
-          { text: "  Next.js      [██████████████░░░░░] 70%  - Advanced API SSR routing", type: "success" },
-          { text: "  Python       [████████████████░░░] 80%  - Extensive Flask & AI library tooling", type: "success" },
-          { text: "  JavaScript   [██████████████████░] 90%  - Native scripting & event paradigms", type: "success" },
-          { text: "  TypeScript   [███████████████░░░░] 75%  - Strict static bindings", type: "success" },
-          { text: "  Node.js      [██████████████░░░░░] 70%  - Microservice APIs & REST structures", type: "success" },
-          { text: "  PyTorch/ML   [████████████░░░░░░░] 60%  - Smart data modeling", type: "info" }
+          { text: "  HTML/CSS                 [██████████████████] 100% - Structured UI markup & responsive layouts", type: "success" },
+          { text: "  JavaScript               [█████████████████░]  90% - Event-driven DOM scripting & logic flows", type: "success" },
+          { text: "  GitHub                   [█████████████████░]  90% - Repository lifecycle, branches & active VCS", type: "success" },
+          { text: "  Google Apps Script (GAS) [████████████████░░]  85% - PEA automation systems & API triggers", type: "success" },
+          { text: "  Python (Flask)           [███████████████░░░]  80% - Ensemble AI routing pipelines & backend APIs", type: "success" },
+          { text: "  .Net (C#)                [██████████████░░░░]  75% - OOP architecture & typed backend frameworks", type: "success" },
+          { text: "  Flutter                  [██████████████░░░░]  75% - Native cross-platform app engineering", type: "success" },
+          { text: "  TensorFlow Lite          [█████████████░░░░░]  70% - Lightweight mobile offline neural inferences", type: "success" },
+          { text: "  PyTorch                  [████████████░░░░░░]  65% - Deep learning, neural model backprop & tuning", type: "info" },
+          { text: "  Scikit-learn             [████████████░░░░░░]  65% - Machine learning regression & classifier trees", type: "info" },
+          { text: "  SQL                      [███████████░░░░░░░]  60% - RDBMS query schemas & database operations", type: "info" },
+          { text: "  C++                      [██████████░░░░░░░░]  50% - Object-oriented system architecture", type: "info" }
         );
         break;
       case "projects":

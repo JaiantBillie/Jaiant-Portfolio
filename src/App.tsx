@@ -18,6 +18,23 @@ export default function App() {
   // Skill filter
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
 
+  const SKILLS_LIST = [
+    { name: "PyTorch", projects: ["trading"] },
+    { name: "Scikit-learn", projects: ["trading"] },
+    { name: "TensorFlow Lite", projects: ["easyeats"] },
+    { name: "Flutter", projects: ["easyeats"] },
+    { name: "HTML/CSS", projects: ["vehicle"] },
+    { name: "JavaScript", projects: ["vehicle"] },
+    { name: "C++", projects: [] },
+    { name: ".Net (C#)", projects: [] },
+    { name: "Python (Flask)", projects: ["easyeats", "trading"] },
+    { name: "Google Apps Script (GAS)", projects: ["vehicle"] },
+    { name: "SQL", projects: [] },
+    { name: "GitHub", projects: ["vehicle", "easyeats", "trading"] },
+  ];
+
+  const selectedSkillObj = SKILLS_LIST.find((s) => s.name === selectedSkill);
+
   // System status simulation
   const [isSysStatusOpen, setIsSysStatusOpen] = useState(false);
   const [sysCpu, setSysCpu] = useState(12);
@@ -173,18 +190,7 @@ export default function App() {
               </p>
 
               <div className="flex flex-wrap gap-3 pt-4">
-                {[
-                  { name: "React", projects: ["vehicle"] },
-                  { name: "Next.js", projects: [] },
-                  { name: "Python", projects: ["easyeats", "trading"] },
-                  { name: "JavaScript", projects: ["vehicle"] },
-                  { name: "TypeScript", projects: [] },
-                  { name: ".Net(C#)", projects: [] },
-                  { name: "Node.js", projects: [] },
-                  { name: "PyTorch", projects: ["trading"] },
-                  { name: "Scikit-learn", projects: ["trading"] },
-                  { name: "Git&Github", projects: ["vehicle", "easyeats", "trading"] },
-                ].map((skill) => {
+                {SKILLS_LIST.map((skill) => {
                   const isActive = selectedSkill === skill.name;
                   return (
                     <button
@@ -239,7 +245,7 @@ export default function App() {
               <div
                 onClick={() => openProject("vehicle")}
                 className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between ${
-                  selectedSkill && !["JavaScript", "Git&Github"].includes(selectedSkill) ? "opacity-35 grayscale" : ""
+                  selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("vehicle") ? "opacity-35 grayscale" : ""
                 }`}
               >
                 <div>
@@ -275,7 +281,7 @@ export default function App() {
               <div
                 onClick={() => openProject("easyeats")}
                 className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between ${
-                  selectedSkill && !["Python", "Git&Github"].includes(selectedSkill) ? "opacity-35 grayscale" : ""
+                  selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("easyeats") ? "opacity-35 grayscale" : ""
                 }`}
               >
                 <div>
@@ -309,7 +315,7 @@ export default function App() {
               <div
                 onClick={() => openProject("trading")}
                 className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between ${
-                  selectedSkill && !["Python", "PyTorch", "Scikit-learn", "Git&Github"].includes(selectedSkill) ? "opacity-35 grayscale" : ""
+                  selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("trading") ? "opacity-35 grayscale" : ""
                 }`}
               >
                 <div>
