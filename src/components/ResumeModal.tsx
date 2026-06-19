@@ -42,7 +42,10 @@ export default function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
           <div className="space-y-6">
             {/* Header profile */}
             <div className="border-b border-primary-cyan/10 pb-4">
-              <h3 className="text-xl font-bold text-white font-sans">Pheeraphat Sekhukhumpat</h3>
+              <h3 className="text-xl font-bold text-white font-sans flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                <span>Pheeraphat Sekhukhumpat</span>
+                <span className="text-sm font-normal text-text-secondary">(นาย พีรพัฒน์ เสคุคุมพัตถ์)</span>
+              </h3>
               <span className="text-xs font-mono text-primary-cyan">COMPUTER ENGINEERING GRADUATE</span>
               
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-text-secondary">
