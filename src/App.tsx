@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Terminal as TerminalIcon, Sparkles, MapPin, ExternalLink, Cpu, Globe, ArrowDown, Code2, Layers, HelpCircle, HardDrive } from "lucide-react";
+import { Terminal as TerminalIcon, Sparkles, MapPin, ExternalLink, Cpu, Globe, ArrowDown, Code2, Layers, HelpCircle, HardDrive, ArrowUp } from "lucide-react";
 import Navbar from "./components/Navbar";
 import TerminalModal from "./components/TerminalModal";
 import ProjectShowcaseModal from "./components/ProjectShowcaseModal";
 import ResumeModal from "./components/ResumeModal";
 import ContactForm from "./components/ContactForm";
+import ScrollReveal from "./components/ScrollReveal";
 
 export default function App() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -14,6 +15,56 @@ export default function App() {
   const [selectedProjectId, setSelectedProjectId] = useState("vehicle");
 
   const [isResumeOpen, setIsResumeOpen] = useState(false);
+
+  // Scroll and Parallax Tracking
+  const [scrollY, setScrollY] = useState(0);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrollY(currentScrollY);
+      setShowBackToTop(currentScrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    const duration = 1200; // Slower and luxurious (1.2 seconds)
+    const start = window.scrollY;
+    const startTime = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+
+    const easeInOutCubic = (t: number) => {
+      return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+    };
+
+    const scroll = (timestamp: number) => {
+      const now = timestamp || (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now());
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const easePosition = easeInOutCubic(progress);
+      
+      window.scrollTo(0, start * (1 - easePosition));
+
+      if (progress < 1) {
+        requestAnimationFrame(scroll);
+      }
+    };
+
+    requestAnimationFrame(scroll);
+  };
+
+  // State for Spotlight Interactive Hover Reveal
+  const [cardCoords, setCardCoords] = useState<{ [key: string]: { x: number; y: number } }>({});
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>, id: string) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setCardCoords((prev) => ({
+      ...prev,
+      [id]: { x: e.clientX - rect.left, y: e.clientY - rect.top },
+    }));
+  };
 
   // Skill filter
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
@@ -48,6 +99,22 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // Prevent background scroll/dual scrollbar when modals are open
+  useEffect(() => {
+    const isAnyModalOpen = isTerminalOpen || isProjectOpen || isResumeOpen;
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [isTerminalOpen, isProjectOpen, isResumeOpen]);
+
   const openTerminal = (cmd?: string) => {
     setTerminalCmd(cmd);
     setIsTerminalOpen(true);
@@ -59,13 +126,33 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-bg-dark text-text-primary overflow-x-hidden selection:bg-primary-cyan/25 selection:text-primary-cyan">
+    <div className="relative min-h-screen bg-bg-dark text-text-primary selection:bg-primary-cyan/25 selection:text-primary-cyan">
       <div className="noise-overlay" />
 
-      {/* Global Background Grid and Ambient Glows */}
-      <div className="absolute inset-0 tech-grid pointer-events-none z-0" />
-      <div className="absolute top-24 left-[10%] w-96 h-96 bg-primary-cyan/5 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[10%] w-96 h-96 bg-primary-cyan/3 rounded-full blur-[100px] pointer-events-none" />
+      {/* Parallax Background & Glows Container to prevent inflating page scroll height */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Global Background Grid and Ambient Glows with Parallax Scrolling offsets */}
+        <div 
+          className="absolute inset-0 tech-grid pointer-events-none" 
+          style={{ transform: `translate3d(0, ${scrollY * 0.12}px, 0)` }}
+        />
+        <div 
+          className="absolute top-24 left-[10%] w-96 h-96 bg-primary-cyan/5 rounded-full blur-[100px] pointer-events-none" 
+          style={{ transform: `translate3d(0, ${scrollY * 0.22}px, 0)` }}
+        />
+        <div 
+          className="absolute top-[40%] right-[10%] w-96 h-96 bg-primary-cyan/3 rounded-full blur-[100px] pointer-events-none" 
+          style={{ transform: `translate3d(0, ${scrollY * 0.08}px, 0)` }}
+        />
+
+        {/* Beautiful parallax typographic watermark layer */}
+        <div 
+          className="absolute top-[32%] left-1/2 -translate-x-1/2 select-none pointer-events-none font-serif text-[11vw] text-white/[0.012] uppercase tracking-[0.25em] whitespace-nowrap font-light italic"
+          style={{ transform: `translate3d(-50%, calc(-50% + ${scrollY * 0.28}px), 0)` }}
+        >
+          PHEERAPHAT
+        </div>
+      </div>
 
       {/* Navbar segment */}
       <Navbar
@@ -78,11 +165,14 @@ export default function App() {
         {/* ==========================================
             1. HERO SECTION
             ========================================== */}
-        <section className="relative min-h-[90vh] flex items-center justify-center pt-16 pb-24 px-6">
-          <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <section className="relative min-h-[90vh] flex items-center justify-center pt-16 pb-24 px-6 overflow-hidden">
+          <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
             
             {/* Left bio details */}
-            <div className="lg:col-span-8 flex flex-col items-start space-y-6">
+            <div 
+              className="lg:col-span-8 flex flex-col items-start space-y-6"
+              style={{ transform: `translate3d(0, ${scrollY * 0.03}px, 0)` }}
+            >
               
               {/* Pulsing Active indicator */}
               <div
@@ -132,8 +222,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right decorative terminal widget (Aesthetics) */}
-            <div className="hidden lg:col-span-4 bg-[#121212] border border-white/10 rounded-md p-5 font-mono text-xs space-y-4 shadow-[0_0_30px_rgba(197,160,89,0.04)] relative overflow-hidden select-none">
+            {/* Right decorative terminal widget (Aesthetics) with opposite direction Parallax drift */}
+            <div 
+              className="hidden lg:col-span-4 bg-[#121212] border border-white/10 rounded-md p-5 font-mono text-xs space-y-4 shadow-[0_0_30px_rgba(197,160,89,0.04)] relative overflow-hidden select-none"
+              style={{ transform: `translate3d(0, ${scrollY * -0.06}px, 0)` }}
+            >
               <div className="absolute top-3 right-3 text-[9px] text-primary-cyan/40 tracking-[0.2em] uppercase">SYSTEM_INDEX</div>
               <div className="flex gap-1.5 border-b border-white/10 pb-3">
                 <div className="w-2 h-2 rounded-full bg-[#C5A059]/40" />
@@ -167,7 +260,10 @@ export default function App() {
 
           </div>
 
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40 hover:opacity-80 transition-opacity pointer-events-none font-mono text-[10px]">
+          <div 
+            className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40 hover:opacity-80 transition-opacity pointer-events-none font-mono text-[10px]"
+            style={{ transform: `translate3d(-50%, ${scrollY * 0.15}px, 0)` }}
+          >
             <span>SCROLL TO EXPLORE ARCHITECTURE</span>
             <ArrowDown size={14} className="animate-bounce" />
           </div>
@@ -179,47 +275,49 @@ export default function App() {
             ========================================== */}
         <section id="about" className="py-24 border-t border-white/10 relative">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="max-w-3xl space-y-6">
-              
-              <h2 className="text-3xl md:text-5xl font-serif font-light italic text-white select-none">
-                Technical <span className="text-primary-cyan not-italic uppercase tracking-[0.2em] text-2xl font-sans inline-block ml-3">Arsenal</span>
-              </h2>
+            <ScrollReveal direction="up" duration={0.8}>
+              <div className="max-w-3xl space-y-6">
+                
+                <h2 className="text-3xl md:text-5xl font-serif font-light italic text-white select-none">
+                  Technical <span className="text-primary-cyan not-italic uppercase tracking-[0.2em] text-2xl font-sans inline-block ml-3">Arsenal</span>
+                </h2>
 
-              <p className="text-sm md:text-base text-text-secondary leading-relaxed max-w-2xl">
-                นักศึกษาวิศวกรรมคอมพิวเตอร์จบใหม่ สนใจในการพัฒนา Frontend, Backend Development และการเรียนรู้การใช้ AI ช่วยในกระบวนการเขียนโค้ด ได้รับโอกาสฝึกงานที่ PEA ทำให้ได้สัมผัสการทำงานในระบบจริง ตั้งใจเรียนรู้ พัฒนาทักษะอย่างต่อเนื่อง และพร้อมเปิดรับคำแนะนำจากทีมงานที่มีประสบการณ์
-              </p>
+                <p className="text-sm md:text-base text-text-secondary leading-relaxed max-w-2xl">
+                  นักศึกษาวิศวกรรมคอมพิวเตอร์จบใหม่ สนใจในการพัฒนา Frontend, Backend Development และการเรียนรู้การใช้ AI ช่วยในกระบวนการเขียนโค้ด ได้รับโอกาสฝึกงานที่ PEA ทำให้ได้สัมผัสการทำงานในระบบจริง ตั้งใจเรียนรู้ พัฒนาทักษะอย่างต่อเนื่อง และพร้อมเปิดรับคำแนะนำจากทีมงานที่มีประสบการณ์
+                </p>
 
-              <div className="flex flex-wrap gap-3 pt-4">
-                {SKILLS_LIST.map((skill) => {
-                  const isActive = selectedSkill === skill.name;
-                  return (
-                    <button
-                      key={skill.name}
-                      onClick={() => setSelectedSkill(isActive ? null : skill.name)}
-                      className={`px-4 py-2 bg-primary-cyan/10 border text-primary-cyan text-xs font-mono font-bold rounded-sm shadow-[0_0_8px_rgba(76,215,246,0.15)] hover:shadow-[0_0_16px_rgba(76,215,246,0.4)] transition-all cursor-pointer select-none ${
-                        isActive
-                          ? "bg-primary-cyan/35 border-primary-cyan text-white scale-105"
-                          : "border-primary-cyan/30 hover:border-primary-cyan/70 hover:bg-primary-cyan/15"
-                      }`}
-                    >
-                      {skill.name}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {selectedSkill && (
-                <div className="text-xs font-mono text-primary-cyan/80 bg-primary-cyan/5 border border-primary-cyan/10 p-3 rounded-sm flex items-center justify-between">
-                  <span>Filtered highlighted projects using: {selectedSkill}.</span>
-                  <button
-                    onClick={() => setSelectedSkill(null)}
-                    className="hover:underline text-white font-bold"
-                  >
-                    Clear Filter
-                  </button>
+                <div className="flex flex-wrap gap-3 pt-4">
+                  {SKILLS_LIST.map((skill) => {
+                    const isActive = selectedSkill === skill.name;
+                    return (
+                      <button
+                        key={skill.name}
+                        onClick={() => setSelectedSkill(isActive ? null : skill.name)}
+                        className={`px-4 py-2 bg-primary-cyan/10 border text-primary-cyan text-xs font-mono font-bold rounded-sm shadow-[0_0_8px_rgba(76,215,246,0.15)] hover:shadow-[0_0_16px_rgba(76,215,246,0.4)] transition-all cursor-pointer select-none ${
+                          isActive
+                            ? "bg-primary-cyan/35 border-primary-cyan text-white scale-105"
+                            : "border-primary-cyan/30 hover:border-primary-cyan/70 hover:bg-primary-cyan/15"
+                        }`}
+                      >
+                        {skill.name}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
+
+                {selectedSkill && (
+                  <div className="text-xs font-mono text-primary-cyan/80 bg-primary-cyan/5 border border-primary-cyan/10 p-3 rounded-sm flex items-center justify-between">
+                    <span>Filtered highlighted projects using: {selectedSkill}.</span>
+                    <button
+                      onClick={() => setSelectedSkill(null)}
+                      className="hover:underline text-white font-bold"
+                    >
+                      Clear Filter
+                    </button>
+                  </div>
+                )}
+              </div>
+            </ScrollReveal>
           </div>
         </section>
 
@@ -230,122 +328,190 @@ export default function App() {
         <section id="work" className="py-24 border-t border-white/10 bg-black/40">
           <div className="max-w-7xl mx-auto px-6">
             
-            <div className="mb-12">
-              <h2 className="text-3xl md:text-5xl font-serif font-light italic text-white select-none">
-                Featured <span className="text-primary-cyan not-italic uppercase tracking-[0.2em] text-2xl font-sans inline-block ml-3">Work</span>
-              </h2>
-              <p className="text-sm text-text-secondary mt-2 max-w-xl font-light">
-                Active software platforms featuring modular neural prediction loops, simulated database systems, and robust routing mechanics.
-              </p>
-            </div>
+            <ScrollReveal direction="up" duration={0.8}>
+              <div className="mb-12">
+                <h2 className="text-3xl md:text-5xl font-serif font-light italic text-white select-none">
+                  Featured <span className="text-primary-cyan not-italic uppercase tracking-[0.2em] text-2xl font-sans inline-block ml-3">Work</span>
+                </h2>
+                <p className="text-sm text-text-secondary mt-2 max-w-xl font-light">
+                  Active software platforms featuring modular neural prediction loops, simulated database systems, and robust routing mechanics.
+                </p>
+              </div>
+            </ScrollReveal>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               
               {/* Project 1 CARD */}
-              <div
-                onClick={() => openProject("vehicle")}
-                className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between ${
-                  selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("vehicle") ? "opacity-35 grayscale" : ""
-                }`}
-              >
-                <div>
-                  <div className="aspect-video bg-surface-lowest border-b border-primary-cyan/10 flex items-center justify-center relative overflow-hidden">
-                    <span className="absolute top-2 left-2 text-[9px] font-mono text-primary-cyan/40 z-10 bg-black/60 px-1 py-0.5 rounded-xs">HOSTED_TELEMETRY</span>
-                    <img 
-                      src="/project1/car-1.jpg" 
-                      referrerPolicy="no-referrer"
-                      alt="Centralized Vehicle Management System" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-6 space-y-3">
-                    <h3 className="text-xl font-bold text-white group-hover:text-primary-cyan transition-colors">
-                      Centralized Vehicle Management System
-                    </h3>
-                    <p className="text-xs text-text-secondary leading-relaxed line-clamp-3">
-                      ระบบจัดการยานพาหนะส่วนกลาง ช่วยให้องค์กรสามารถติดตามและจัดการยานพาหนะได้อย่างมีประสิทธิภาพ
-                    </p>
-                  </div>
-                </div>
+              <ScrollReveal direction="up" delay={0.0} duration={0.8} className="flex">
+                <div
+                  onClick={() => openProject("vehicle")}
+                  onMouseMove={(e) => handleCardMouseMove(e, "vehicle")}
+                  className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between relative w-full ${
+                    selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("vehicle") ? "opacity-35 grayscale" : ""
+                  }`}
+                >
+                  {/* Spotlight background reveal */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
+                    style={{
+                      background: `radial-gradient(280px circle at ${cardCoords["vehicle"]?.x ?? 0}px ${cardCoords["vehicle"]?.y ?? 0}px, rgba(197, 160, 89, 0.08), transparent 80%)`
+                    }}
+                  />
 
-                <div className="p-6 pt-0 flex flex-wrap gap-2 text-[10px] font-mono">
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">HTML</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">CSS</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">JavaScript</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Bootstrap</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Google App Script</span>
+                  <div className="relative z-10">
+                    <div className="aspect-video bg-surface-lowest border-b border-primary-cyan/10 flex items-center justify-center relative overflow-hidden">
+                      <span className="absolute top-2 left-2 text-[9px] font-mono text-primary-cyan/40 z-10 bg-black/60 px-1 py-0.5 rounded-xs">HOSTED_TELEMETRY</span>
+                      <img 
+                        src="/project1/car-1.jpg" 
+                        referrerPolicy="no-referrer"
+                        alt="Centralized Vehicle Management System" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="p-6 space-y-3">
+                      <h3 className="text-xl font-bold text-white group-hover:text-primary-cyan transition-colors">
+                        Centralized Vehicle Management System
+                      </h3>
+                      <p className="text-xs text-text-secondary leading-relaxed line-clamp-3">
+                        ระบบจัดการยานพาหนะส่วนกลาง ช่วยให้องค์กรสามารถติดตามและจัดการยานพาหนะได้อย่างมีประสิทธิภาพ
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10">
+                    <div className="p-6 pt-0 flex flex-wrap gap-2 text-[10px] font-mono">
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">HTML</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">CSS</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">JavaScript</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Bootstrap</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Google App Script</span>
+                    </div>
+
+                    {/* Interactive Hover Reveal */}
+                    <div className="mx-6 pb-4 pt-2 overflow-hidden h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 font-mono text-[9px] text-primary-cyan/80 flex items-center justify-between border-t border-primary-cyan/10">
+                      <span className="flex items-center gap-1">
+                        <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                        INTEGRATION: GOOGLE_GAS
+                      </span>
+                      <span>DB_SHEETS: STABLE</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
 
               {/* Project 2 CARD */}
-              <div
-                onClick={() => openProject("easyeats")}
-                className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between ${
-                  selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("easyeats") ? "opacity-35 grayscale" : ""
-                }`}
-              >
-                <div>
-                  <div className="aspect-video bg-surface-lowest border-b border-primary-cyan/10 flex items-center justify-center relative overflow-hidden">
-                    <span className="absolute top-2 left-2 text-[9px] font-mono text-primary-cyan/40 z-10 bg-black/60 px-1 py-0.5 rounded-xs">TFLITE_INFERENCE</span>
-                    <img 
-                      src="/project2/food_1.jpg" 
-                      referrerPolicy="no-referrer"
-                      alt="EasyEats" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-6 space-y-3">
-                    <h3 className="text-xl font-bold text-white group-hover:text-primary-cyan transition-colors">
-                      EasyEats — AI Food Recommendation
-                    </h3>
-                    <p className="text-xs text-text-secondary leading-relaxed line-clamp-3">
-                      แพลตฟอร์มแนะนำอาหารอัจฉริยะ โดยใช้ AI แนะนำเมนูอาหารจากวัตถุดิบที่คุณมี 
-                    </p>
-                  </div>
-                </div>
+              <ScrollReveal direction="up" delay={0.15} duration={0.8} className="flex">
+                <div
+                  onClick={() => openProject("easyeats")}
+                  onMouseMove={(e) => handleCardMouseMove(e, "easyeats")}
+                  className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between relative w-full ${
+                    selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("easyeats") ? "opacity-35 grayscale" : ""
+                  }`}
+                >
+                  {/* Spotlight background reveal */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
+                    style={{
+                      background: `radial-gradient(280px circle at ${cardCoords["easyeats"]?.x ?? 0}px ${cardCoords["easyeats"]?.y ?? 0}px, rgba(197, 160, 89, 0.08), transparent 80%)`
+                    }}
+                  />
 
-                <div className="p-6 pt-0 flex flex-wrap gap-2 text-[10px] font-mono">
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Flutter</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Python (Flask)</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">TensorFlow Lite</span>
+                  <div className="relative z-10">
+                    <div className="aspect-video bg-surface-lowest border-b border-primary-cyan/10 flex items-center justify-center relative overflow-hidden">
+                      <span className="absolute top-2 left-2 text-[9px] font-mono text-primary-cyan/40 z-10 bg-black/60 px-1 py-0.5 rounded-xs">TFLITE_INFERENCE</span>
+                      <img 
+                        src="/project2/food_1.jpg" 
+                        referrerPolicy="no-referrer"
+                        alt="EasyEats" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="p-6 space-y-3">
+                      <h3 className="text-xl font-bold text-white group-hover:text-primary-cyan transition-colors">
+                        EasyEats — AI Food Recommendation
+                      </h3>
+                      <p className="text-xs text-text-secondary leading-relaxed line-clamp-3">
+                        แพลตฟอร์มแนะนำอาหารอัจฉริยะ โดยใช้ AI แนะนำเมนูอาหารจากวัตถุดิบที่คุณมี 
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10">
+                    <div className="p-6 pt-0 flex flex-wrap gap-2 text-[10px] font-mono">
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Flutter</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Python (Flask)</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">TensorFlow Lite</span>
+                    </div>
+
+                    {/* Interactive Hover Reveal */}
+                    <div className="mx-6 pb-4 pt-2 overflow-hidden h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 font-mono text-[9px] text-primary-cyan/80 flex items-center justify-between border-t border-primary-cyan/10">
+                      <span className="flex items-center gap-1">
+                        <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                        ENGINE: TFLITE_MOBILE
+                      </span>
+                      <span>ACCURACY: 94.2%</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
 
               {/* Project 3 CARD */}
-              <div
-                onClick={() => openProject("trading")}
-                className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between ${
-                  selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("trading") ? "opacity-35 grayscale" : ""
-                }`}
-              >
-                <div>
-                  <div className="aspect-video bg-surface-lowest border-b border-primary-cyan/10 flex items-center justify-center relative overflow-hidden">
-                    <span className="absolute top-2 left-2 text-[9px] font-mono text-primary-cyan/40 z-10 bg-black/60 px-1 py-0.5 rounded-xs">FOREX_BOT_VPS</span>
-                    <img 
-                      src="/project3/Forex_1.jpg" 
-                      referrerPolicy="no-referrer"
-                      alt="SnowballAI" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-6 space-y-3">
-                    <h3 className="text-xl font-bold text-white group-hover:text-primary-cyan transition-colors">
-                      SnowballAI — Algorithmic Trading Bot
-                    </h3>
-                    <p className="text-xs text-text-secondary leading-relaxed line-clamp-3">
-                      บอทเทรด Forex อัตโนมัติด้วย AI Ensemble Models ที่รันบน VPS
-                    </p>
-                  </div>
-                </div>
+              <ScrollReveal direction="up" delay={0.3} duration={0.8} className="flex">
+                <div
+                  onClick={() => openProject("trading")}
+                  onMouseMove={(e) => handleCardMouseMove(e, "trading")}
+                  className={`tech-panel overflow-hidden group cursor-pointer font-sans flex flex-col justify-between relative w-full ${
+                    selectedSkill && selectedSkillObj && !selectedSkillObj.projects.includes("trading") ? "opacity-35 grayscale" : ""
+                  }`}
+                >
+                  {/* Spotlight background reveal */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
+                    style={{
+                      background: `radial-gradient(280px circle at ${cardCoords["trading"]?.x ?? 0}px ${cardCoords["trading"]?.y ?? 0}px, rgba(197, 160, 89, 0.08), transparent 80%)`
+                    }}
+                  />
 
-                <div className="p-6 pt-0 flex flex-wrap gap-2 text-[10px] font-mono">
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Python</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">PyTorch</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Scikit-learn</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Flask</span>
-                  <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">MT5 API</span>
+                  <div className="relative z-10">
+                    <div className="aspect-video bg-surface-lowest border-b border-primary-cyan/10 flex items-center justify-center relative overflow-hidden">
+                      <span className="absolute top-2 left-2 text-[9px] font-mono text-primary-cyan/40 z-10 bg-black/60 px-1 py-0.5 rounded-xs">FOREX_BOT_VPS</span>
+                      <img 
+                        src="/project3/Forex_1.jpg" 
+                        referrerPolicy="no-referrer"
+                        alt="SnowballAI" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="p-6 space-y-3">
+                      <h3 className="text-xl font-bold text-white group-hover:text-primary-cyan transition-colors">
+                        SnowballAI — Algorithmic Trading Bot
+                      </h3>
+                      <p className="text-xs text-text-secondary leading-relaxed line-clamp-3">
+                        บอทเทรด Forex อัตโนมัติด้วย AI Ensemble Models ที่รันบน VPS
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10">
+                    <div className="p-6 pt-0 flex flex-wrap gap-2 text-[10px] font-mono">
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Python</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">PyTorch</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Scikit-learn</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">Flask</span>
+                      <span className="px-2 py-1 bg-surface-high border border-primary-cyan/10 rounded-sm text-primary-cyan font-semibold">MT5 API</span>
+                    </div>
+
+                    {/* Interactive Hover Reveal */}
+                    <div className="mx-6 pb-4 pt-2 overflow-hidden h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 font-mono text-[9px] text-primary-cyan/80 flex items-center justify-between border-t border-primary-cyan/10">
+                      <span className="flex items-center gap-1">
+                        <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                        COMPLEXITY: ENSEMBLE_ML
+                      </span>
+                      <span>VPS_NODE: ONLINE</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
 
             </div>
 
@@ -356,7 +522,9 @@ export default function App() {
         {/* ==========================================
             4. CONTACT SECTION
             ========================================== */}
-        <ContactForm />
+        <ScrollReveal direction="up" duration={1.0}>
+          <ContactForm />
+        </ScrollReveal>
 
       </main>
 
@@ -469,6 +637,18 @@ export default function App() {
             Synchronized with Google Cloud Run services
           </div>
         </div>
+      )}
+
+      {/* 5. Floating Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-45 p-3.5 rounded-full bg-black/85 border border-primary-cyan/40 text-primary-cyan hover:bg-primary-cyan hover:text-black hover:shadow-[0_0_20px_rgba(76,215,246,0.5)] transition-all group cursor-pointer flex items-center justify-center"
+          title="Back to top"
+          aria-label="Back to top"
+        >
+          <ArrowUp size={16} className="group-hover:-translate-y-0.5 transition-transform" />
+        </button>
       )}
 
     </div>
